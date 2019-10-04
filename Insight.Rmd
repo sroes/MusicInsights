@@ -1,0 +1,60 @@
+---
+title: "Music Insights"
+author: "Scott Roes"
+output:
+  html_document:
+    df_print: paged
+---
+
+First, we need to use tidyverse to handle data importing and wrangling...
+
+```{r}
+install.packages("tidyverse", repos = "http://cran.us.r-project.org")
+
+install.packages("dplyr", repos = "http://cran.us.r-project.org")
+library("tidyverse")
+library("dplyr")
+
+survey <- read_csv("https://raw.githubusercontent.com/introdsci/MusicSurvey/master/music-survey.csv")
+
+preferences <- read_csv("https://raw.githubusercontent.com/introdsci/MusicSurvey/master/preferences-survey.csv")
+
+
+```
+Assigning the columns to their respective names
+
+```{r}
+colnames(survey)[1] <- "time_submitted"
+colnames(survey)[2] <- "pseudonym_generator"
+colnames(survey)[3] <- "pseudonym"
+colnames(survey)[4] <- "sex"
+colnames(survey)[5] <- "academic_major"
+colnames(survey)[6]<-"academic_level"
+colnames(survey)[7]<-"year_born"
+colnames(survey)[8]<-"instrument_list"
+colnames(survey)[9]<-"favorite_song_artist"
+colnames(survey)[10]<-"favorite_song"
+colnames(survey)[11]<-"favorite_song_link"
+
+
+```
+
+Tidying up the data in the tables for person, favoriteSong and ratings. 
+
+```{r}
+person <- tibble(time_submitted=survey$time_submitted, pseudonym_generator=survey$pseudonym_generator, sex=survey$sex, academic_major=survey$academic_major, academic_level=survey$academic_level)
+
+favoriteSong <- tibble(pseudonym=survey$pseudonym, favorite_song=survey$favorite_song, favorite_song_artist=survey$favorite_song_artist, favorite_song_link=survey$favorite_song_link)
+
+preferences <- select(preferences, -Timestamp)
+
+ratings <-gather(preferences, artist_song, rating, "40 crew\tNot Enough":"Wheezer\tBuddy Holly")
+
+ratings$artist_song <- gsub('[.]', ' ', ratings$artist_song)
+colnames(ratings)[1]<-"pseudonym"
+```
+
+
+
+
+

@@ -1,0 +1,63 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+ 
+
+```{r, include=FALSE}
+
+include <- function(library_name){
+  if( !(library_name %in% installed.packages()) )
+    install.packages(library_name) 
+  library(library_name, character.only=TRUE)
+}
+include("tidyverse")
+include("knitr")
+include("caret")
+purl("/Users/scottroes/MusicInsights/Insight.Rmd", output = "part1.r")
+source("part1.r")
+
+```
+
+
+
+```{r}
+
+number_of_talents <- talents %>%
+  group_by(pseudonym) %>%
+  summarise(num_talents=length(pseudonym))
+
+person$academic_level <- as.factor(person$academic_level)
+Person_with_talents <- merge(person, number_of_talents, by="pseudonym")
+
+
+Person_with_talents$num_talents <- ifelse(Person_with_talents$instruments=="", 0, Person_with_talents$num_talents)
+Person_with_talents$num_talents <- ifelse(is.na(Person_with_talents$num_talents), 0, Person_with_talents$num_talents)
+
+
+```
+
+I chose academic_level because it was the best in predicting the values. I came to this conclusion based on the Pr-values in the first summary along with trial and error. This decision was confirmed to be the correct one because the predicted values were closer to the actual values than the original. However the values still do not indicate they can sucesfully predict the number of talents, even with the better model.
+```{r}
+set.seed(123)
+sample_selection <- Person_with_talents$num_talents %>%
+  createDataPartition(p=0.75, list=FALSE)
+train <- Person_with_talents[sample_selection, ]
+test <- Person_with_talents[-sample_selection, ]
+train_model <- lm(num_talents ~ sex + academic_major + academic_level + year_born, data=Person_with_talents)
+summary(train_model)
+(prediction <- train_model %>% predict(test))
+test$num_talents
+
+
+
+train_model <- lm(num_talents ~ academic_level, data = Person_with_talents)
+summary(train_model)
+
+(prediction <- train_model %>% predict(test))
+test$num_talents
+```
+
+

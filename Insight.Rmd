@@ -1,4 +1,4 @@
----
+.---
 title: "Music Insights"
 author: "Scott Roes"
 output:
@@ -11,9 +11,15 @@ First, we need to use tidyverse to handle data importing and wrangling...
 ```{r}
 install.packages("tidyverse", repos = "http://cran.us.r-project.org")
 
-install.packages("dplyr", repos = "http://cran.us.r-project.org")
+
+#install.packages("dplyr", repos = "http://cran.us.r-project.org")
 library("tidyverse")
 library("dplyr")
+library("ggplot2")
+
+
+
+
 
 survey <- read_csv("https://raw.githubusercontent.com/introdsci/MusicSurvey/master/music-survey.csv")
 
@@ -21,6 +27,10 @@ preferences <- read_csv("https://raw.githubusercontent.com/introdsci/MusicSurvey
 
 
 ```
+
+
+
+
 Assigning the columns to their respective names
 
 ```{r}
@@ -42,16 +52,42 @@ colnames(survey)[11]<-"favorite_song_link"
 Tidying up the data in the tables for person, favoriteSong and ratings. 
 
 ```{r}
-person <- tibble(time_submitted=survey$time_submitted, pseudonym_generator=survey$pseudonym_generator, sex=survey$sex, academic_major=survey$academic_major, academic_level=survey$academic_level)
+person <- tibble(time_submitted=survey$time_submitted, pseudonym=survey$pseudonym, pseudonym_generator=survey$pseudonym_generator, sex=survey$sex, academic_major=survey$academic_major, academic_level=survey$academic_level, instruments=survey$instrument_list, year_born=survey$year_born)
+
+person$academic_level <- as.factor(person$academic_level)
+person$academic_major <- as.factor(person$academic_major)
+person$sex <- as.factor(person$sex)
+
 
 favoriteSong <- tibble(pseudonym=survey$pseudonym, favorite_song=survey$favorite_song, favorite_song_artist=survey$favorite_song_artist, favorite_song_link=survey$favorite_song_link)
 
-preferences <- select(preferences, -Timestamp)
+talents <- tibble(pseudonym=survey$pseudonym, instruments=survey$instrument_list)
+talents <- separate_rows(talents,-pseudonym, sep=",")
+#clean responses for consistency:
+talents$instruments <- talents$instruments %>% 
+                        trimws() %>% 
+                        tolower() %>%
+                        str_replace_all(pattern=".*piano.*","piano") %>%
+                        str_replace_all(pattern=".*ukulele.*","ukulele") %>%
+                        as.factor()
 
-ratings <-gather(preferences, artist_song, rating, "40 crew\tNot Enough":"Wheezer\tBuddy Holly")
 
-ratings$artist_song <- gsub('[.]', ' ', ratings$artist_song)
-colnames(ratings)[1]<-"pseudonym"
+
+
+#preferences <- select(preferences, -Timestamp)
+# 
+# ratings <-gather(preferences, artist_song, rating, "40 crew\tNot Enough":"Wheezer\tBuddy Holly")
+# ratings$artist_song <- gsub('[.]', ' ', ratings$artist_song)
+# colnames(ratings)[1]<-"pseudonym"
+# ggplot(data=ratings, aes(x=rating, )) + geom_jitter(bindwidth = 1)
+# ggplot(ratings, aes(x = rating, y = pseudonym)) + geom_boxplot()
+# ggplot(ratings, aes(x = rating, y = pseudonym, )) + geom_boxplot() + coord_flip()
+# ggplot(ratings, aes(x = rating, y = pseudonym, )) + geom_boxplot()
+# ggplot(ratings, aes(x = rating, y = pseudonym, )) + geom_boxplot()+ coord_fixed()
+# 
+# 
+# 
+
 ```
 
 

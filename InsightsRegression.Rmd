@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Music Insights Regression"
 output:
   html_document:
     df_print: paged
